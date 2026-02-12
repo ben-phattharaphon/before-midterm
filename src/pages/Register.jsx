@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
 import { email } from "zod";
+import { registerValidator } from "../validators/register.validator";
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -11,6 +12,8 @@ function Register() {
     email: "",
     phone: "",
   });
+
+  const [error, setError] = useState({}); //set null ไปก่อน
 
   const navigate = useNavigate();
 
@@ -22,6 +25,15 @@ function Register() {
 
   const hdlSubmit = async (e) => {
     e.preventDefault();
+    setError[{}];
+    const result = registerValidator.safeParse(formData);
+    if (!result.success) {
+      const { fieldErrors } = result.error.flatten(); //เรียก fieldErrors มาใช้
+      console.log(fieldErrors);
+      setError(fieldErrors);
+      return;
+    }
+    // console.log(result.error.flatten());
     try {
       const res = await axios.post(
         "https://jsonplaceholder.typicode.com/posts",
@@ -35,6 +47,8 @@ function Register() {
       toast.error("ลงทะเบียนล้มเหลว");
     }
   };
+
+  console.log("error", error);
 
   return (
     <div className="min-h-screen bg-gray-50 flex justify-center items-center p-4">
@@ -53,6 +67,7 @@ function Register() {
           placeholder="username:"
           onChange={hdlChange}
         />
+        {error.username && <p className="text-red-500">{error.username[0]}</p>}
 
         <label htmlFor="">Password :</label>
         <input
@@ -62,7 +77,7 @@ function Register() {
           placeholder="password"
           onChange={hdlChange}
         />
-
+        {error.password && <p className="text-red-500">{error.password[0]}</p>}
         <label htmlFor="">Email :</label>
         <input
           type="text"
@@ -71,7 +86,7 @@ function Register() {
           placeholder="example@mail.com"
           onChange={hdlChange}
         />
-
+        {error.email && <p className="text-red-500">{error.email[0]}</p>}
         <label htmlFor="">Phone :</label>
         <input
           type="text"
@@ -80,7 +95,7 @@ function Register() {
           placeholder="phone number"
           onChange={hdlChange}
         />
-
+        {error.phone && <p className="text-red-500">{error.phone[0]}</p>}
         <button className="rounded-md m-5 bg-amber-200 p-2 hover:bg-[#F6A7BA]">
           Register
         </button>
